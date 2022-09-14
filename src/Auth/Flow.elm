@@ -1,6 +1,6 @@
 module Auth.Flow exposing (..)
 
-import Auth.Common exposing (MethodId)
+import Auth.Common exposing (MethodId, SessionId)
 import Auth.Method.EmailMagicLink
 import Auth.Method.OAuthGithub
 import Auth.Method.OAuthGoogle
@@ -99,12 +99,21 @@ updateFromFrontend { asBackendMsg } clientId sessionId authToBackend model =
             )
 
         Auth.Common.AuthLogoutRequested ->
-            ( model
+            let
+                maybeUser =
+                    model.sessions
+                        |> Dict.get sessionId
+                        |> Maybe.andThen (\session -> model.users |> Dict.get session.userId)
+
+                maybeToken =
+                    Maybe.andThen .authToken maybeUser
+            in
+            ( { model | sessions = model.sessions |> Dict.remove sessionId }
             , Time.now
                 |> Task.perform
                     (\t ->
                         asBackendMsg <|
-                            Auth.Common.AuthLogout sessionId clientId
+                            Auth.Common.AuthLogout sessionId maybeToken
                     )
             )
 
@@ -201,11 +210,29 @@ backendUpdate { asToFrontend, asBackendMsg, sendToFrontend, backendModel, loadMe
         Auth.Common.AuthRenewSession sessionId clientId ->
             renewSession sessionId clientId backendModel
 
-        Auth.Common.AuthLogout sessionId clientId ->
-            logout sessionId clientId backendModel
+        Auth.Common.AuthLogout clientId maybeToken ->
+            case maybeToken of
+                Just token ->
+                    withMethod token.methodId
+                        clientId
+                        (\method ->
+                            ( backendModel
+                            , case method of
+                                Auth.Common.ProtocolEmailMagicLink config ->
+                                    config.onLogout token asBackendMsg
 
-        Auth.Common.AuthDelayedLogout clientId ->
-            logoutDelayed clientId backendModel
+                                Auth.Common.ProtocolOAuth config ->
+                                    config.onLogout token asBackendMsg
+                            )
+                        )
+
+                Nothing ->
+                    ( backendModel, Cmd.none )
+
+        Auth.Common.AuthLogoutResponse _ ->
+            ( backendModel
+            , Cmd.none
+            )
 
 
 signInRequested :

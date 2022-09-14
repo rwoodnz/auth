@@ -5,6 +5,7 @@ import Browser.Navigation exposing (Key)
 import Bytes exposing (Bytes)
 import Bytes.Encode as Bytes
 import Env
+import Http
 import OAuth
 import OAuth.AuthorizationCode as OAuth
 import Process
@@ -38,6 +39,7 @@ type alias ConfigurationEmailMagicLink frontendMsg backendMsg frontendModel back
         -> { username : Maybe String }
         -> Time.Posix
         -> ( backendModel, Cmd backendMsg )
+    , onLogout : Token -> (BackendMsg -> backendMsg) -> Cmd backendMsg
     , onFrontendCallbackInit :
         frontendModel
         -> MethodId
@@ -63,7 +65,7 @@ type alias ConfigurationOAuth frontendMsg backendMsg frontendModel backendModel 
     { id : String
     , authorizationEndpoint : Url
     , tokenEndpoint : Url
-    , logoutEndpoint : Maybe Url
+    , onLogout : Token -> (BackendMsg -> backendMsg) -> Cmd backendMsg
     , clientId : String
 
     -- @TODO this will force a leak out as frontend uses this config?
@@ -102,8 +104,8 @@ type BackendMsg
     | AuthCallbackReceived_ SessionId ClientId MethodId Url String String Time.Posix
     | AuthSuccess SessionId ClientId MethodId Time.Posix (Result Error ( UserInfo, Maybe Token ))
     | AuthRenewSession SessionId ClientId
-    | AuthLogout SessionId ClientId
-    | AuthDelayedLogout ClientId
+    | AuthLogout ClientId (Maybe Token)
+    | AuthLogoutResponse (Result Http.Error ())
 
 
 type ToFrontend

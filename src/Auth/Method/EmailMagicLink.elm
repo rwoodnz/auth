@@ -48,6 +48,7 @@ configuration { initiateSignin, onAuthCallbackReceived } =
     ProtocolEmailMagicLink
         { id = "EmailMagicLink"
         , initiateSignin = initiateSignin
+        , onLogout = \_ _ -> Cmd.none
         , onFrontendCallbackInit = onFrontendCallbackInit
         , onAuthCallbackReceived = onAuthCallbackReceived
         , placeholder = \frontendMsg backendMsg frontendModel backendModel -> ()

@@ -32,7 +32,7 @@ configuration clientId clientSecret =
         { id = "OAuthGoogle"
         , authorizationEndpoint = { defaultHttpsUrl | host = "accounts.google.com", path = "/o/oauth2/v2/auth" }
         , tokenEndpoint = { defaultHttpsUrl | host = "oauth2.googleapis.com", path = "/token" }
-        , logoutEndpoint = Nothing
+        , onLogout = \_ _ -> Cmd.none
         , clientId = clientId
         , clientSecret = clientSecret
         , scope = [ "openid email profile" ]

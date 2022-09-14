@@ -10,7 +10,7 @@
         "Auth.Protocol.OAuth",
         "Auth.Method.OAuthGoogle",
         "Auth.Method.OAuthGithub",
-        "Auth.Method.EmailMagicLink"
+        "Auth.Method.EmailMagicLink",
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

@@ -34,7 +34,7 @@ configuration clientId clientSecret =
         { id = "OAuthAuth0"
         , authorizationEndpoint = { defaultHttpsUrl | host = Config.auth0AppTenant, path = "/authorize" }
         , tokenEndpoint = { defaultHttpsUrl | host = Config.auth0AppTenant, path = "/oauth/token" }
-        , logoutEndpoint = Just { defaultHttpsUrl | host = Config.auth0AppTenant, path = "/v2/logout", query = Just ("client_id=" ++ clientId ++ "&returnTo=") }
+        , onLogout = getLogout
         , clientId = clientId
         , clientSecret = clientSecret
         , scope = [ "openid email profile" ]
@@ -117,6 +117,24 @@ getUserInfo authenticationSuccess =
 
             Err err ->
                 Task.fail (Http.BadBody err)
+
+
+getLogout : Auth.Common.Token -> (BackendMsg -> backendMsg) -> Cmd backendMsg
+getLogout authToken asBackendMsg =
+    let
+        url =
+            { defaultHttpsUrl | host = Config.auth0AppTenant, path = "/v2/logout" }
+    in
+    Http.request
+        { method = "GET"
+        , headers = OAuth.useToken authToken.token []
+        , url = "https://windschools.eu.auth0.com/v2/logout?client_id=9hTzuV6SkonCobIyE9K13YINAq1XLgT9&returnTo=http://localhost:8000/"
+        , body = Http.emptyBody
+        , expect = Http.expectWhatever Auth.Common.AuthLogoutResponse
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+        |> Cmd.map asBackendMsg
 
 
 jwtErrorToString err =

@@ -31,7 +31,7 @@ configuration clientId clientSecret =
         { id = "OAuthGithub"
         , authorizationEndpoint = { defaultHttpsUrl | host = "github.com", path = "/login/oauth/authorize" }
         , tokenEndpoint = { defaultHttpsUrl | host = "github.com", path = "/login/oauth/access_token" }
-        , logoutEndpoint = Nothing
+        , onLogout = \_ _ -> Cmd.none
         , clientId = clientId
         , clientSecret = clientSecret
         , scope = [ "read:user", "user:email" ]
