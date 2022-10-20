@@ -56,13 +56,13 @@ onFrontendLogoutCallback navigationMsg toBackendFn =
         ]
 
 
-updateFromFrontend { asBackendMsg } clientId sessionId authToBackend model =
+updateFromFrontend { backendMsg } clientId sessionId authToBackend model =
     case authToBackend of
         Auth.Common.AuthSigninInitiated params ->
             ( model
             , withCurrentTime
                 (\now ->
-                    asBackendMsg <|
+                    backendMsg <|
                         Auth.Common.AuthSigninInitiated_
                             { sessionId = sessionId
                             , clientId = clientId
@@ -79,7 +79,7 @@ updateFromFrontend { asBackendMsg } clientId sessionId authToBackend model =
             , Time.now
                 |> Task.perform
                     (\now ->
-                        asBackendMsg <|
+                        backendMsg <|
                             Auth.Common.AuthCallbackReceived_
                                 sessionId
                                 clientId
@@ -96,7 +96,7 @@ updateFromFrontend { asBackendMsg } clientId sessionId authToBackend model =
             , Time.now
                 |> Task.perform
                     (\t ->
-                        asBackendMsg <|
+                        backendMsg <|
                             Auth.Common.AuthRenewSession sessionId clientId
                     )
             )
@@ -106,7 +106,7 @@ updateFromFrontend { asBackendMsg } clientId sessionId authToBackend model =
             , Time.now
                 |> Task.perform
                     (\t ->
-                        asBackendMsg <|
+                        backendMsg <|
                             Auth.Common.AuthLogout sessionId clientId
                     )
             )
